@@ -1,23 +1,23 @@
 'use strict'
 
-var objectAssign = require('./lib/util').objectAssign
-var streamToPromise = require('./lib/promisify')
-var compact = require('./lib/util').compact
-var isArray = require('./lib/util').isArray
-var absolutes = require('./lib/absolutes')
-var streamHelper = require('./lib/stream')
-var isUrl = require('./lib/util').isUrl
-var Crawler = require('x-ray-crawler')
-var resolve = require('./lib/resolve')
-var root = require('./lib/util').root
-var params = require('./lib/params')
-var debug = require('debug')('x-ray')
-var cheerio = require('cheerio')
-var enstore = require('enstore')
-var walk = require('./lib/walk')
-var fs = require('fs')
+const objectAssign = require('./lib/util').objectAssign
+const streamToPromise = require('./lib/promisify')
+const compact = require('./lib/util').compact
+const isArray = require('./lib/util').isArray
+const absolutes = require('./lib/absolutes')
+const streamHelper = require('./lib/stream')
+const isUrl = require('./lib/util').isUrl
+const Crawler = require('@thegu5/x-ray-crawler')
+const resolve = require('./lib/resolve')
+const root = require('./lib/util').root
+const params = require('./lib/params')
+const debug = require('debug')('x-ray')
+const cheerio = require('cheerio')
+const enstore = require('enstore')
+const walk = require('./lib/walk')
+const fs = require('fs')
 
-var CONST = {
+const CONST = {
   CRAWLER_METHODS: ['concurrency', 'throttle', 'timeout', 'driver', 'delay', 'limit', 'abort'],
   INIT_STATE: {
     stream: false,
@@ -29,23 +29,23 @@ var CONST = {
 }
 
 function Xray (options) {
-  var crawler = Crawler()
+  const crawler = Crawler()
   options = options || {}
-  var filters = options.filters || {}
+  const filters = options.filters || {}
 
   function xray (source, scope, selector) {
-    var args = params(source, scope, selector)
+    const args = params(source, scope, selector)
     selector = args.selector
     source = args.source
     scope = args.context
 
-    var state = objectAssign({}, CONST.INIT_STATE)
-    var store = enstore()
-    var pages = []
-    var stream
+    const state = objectAssign({}, CONST.INIT_STATE)
+    const store = enstore()
+    let pages = []
+    let stream
 
-    var walkHTML = WalkHTML(xray, selector, scope, filters)
-    var request = Request(crawler)
+    const walkHTML = WalkHTML(xray, selector, scope, filters)
+    const request = Request(crawler)
 
     function node (source2, fn) {
       if (arguments.length === 1) {
@@ -64,12 +64,12 @@ function Xray (options) {
         debug('starting at: %s', source)
         request(source, function (err, html) {
           if (err) return next(err)
-          var $ = load(html, source)
+          const $ = load(html, source)
           walkHTML($, next)
         })
       } else if (scope && ~scope.indexOf('@')) {
         debug('resolving to a url: %s', scope)
-        var url = resolve(source, false, scope, filters)
+        const url = resolve(source, false, scope, filters)
 
         // ensure that a@href is a URL
         if (!isUrl(url)) {
@@ -80,11 +80,11 @@ function Xray (options) {
         debug('resolved "%s" to a %s', scope, url)
         request(url, function (err, html) {
           if (err) return next(err)
-          var $ = load(html, url)
+          const $ = load(html, url)
           walkHTML($, next)
         })
       } else if (source) {
-        var $ = load(source)
+        const $ = load(source)
         walkHTML($, next)
       } else {
         debug('%s is not a url or html. Skipping!', source)
@@ -93,8 +93,8 @@ function Xray (options) {
 
       function next (err, obj, $) {
         if (err) return fn(err)
-        var paginate = state.paginate
-        var limit = --state.limit
+        const paginate = state.paginate
+        const limit = --state.limit
 
         // create the stream
         if (!stream) {
@@ -115,7 +115,7 @@ function Xray (options) {
             return fn(null, pages)
           }
 
-          var url = resolve($, false, paginate, filters)
+          const url = resolve($, false, paginate, filters)
           debug('paginate(%j) => %j', paginate, url)
 
           if (!isUrl(url)) {
@@ -138,7 +138,7 @@ function Xray (options) {
 
           request(url, function (err, html) {
             if (err) return next(err)
-            var $ = load(html, url)
+            const $ = load(html, url)
             walkHTML($, next)
           })
         } else {
@@ -170,7 +170,7 @@ function Xray (options) {
 
     node.stream = function () {
       state.stream = store.createWriteStream()
-      var rs = store.createReadStream()
+      const rs = store.createReadStream()
       streamHelper.waitCb(rs, node)
       return rs
     }
@@ -213,7 +213,7 @@ function Request (crawler) {
 
 function load (html, url) {
   html = html || ''
-  var $ = html.html ? html : cheerio.load(html, { decodeEntities: false })
+  let $ = html.html ? html : cheerio.load(html, { decodeEntities: false })
   if (url) $ = absolutes(url, $)
   return $
 }
@@ -222,7 +222,7 @@ function WalkHTML (xray, selector, scope, filters) {
   return function walkHTML ($, fn) {
     walk(selector, function (v, k, next) {
       if (typeof v === 'string') {
-        var value = resolve($, root(scope), v, filters)
+        const value = resolve($, root(scope), v, filters)
         return next(null, value)
       } else if (typeof v === 'function') {
         return v($, function (err, obj) {
@@ -233,16 +233,16 @@ function WalkHTML (xray, selector, scope, filters) {
         if (typeof v[0] === 'string') {
           return next(null, resolve($, root(scope), v, filters))
         } else if (typeof v[0] === 'object') {
-          var $scope = $.find ? $.find(scope) : $(scope)
-          var pending = $scope.length
-          var out = []
+          const $scope = $.find ? $.find(scope) : $(scope)
+          let pending = $scope.length
+          const out = []
 
           // Handle the empty result set (thanks @jenbennings!)
           if (!pending) return next(null, out)
 
           return $scope.each(function (i, el) {
-            var $innerscope = $scope.eq(i)
-            var node = xray(scope, v[0])
+            const $innerscope = $scope.eq(i)
+            const node = xray(scope, v[0])
             node($innerscope, function (err, obj) {
               if (err) return next(err)
               out[i] = obj

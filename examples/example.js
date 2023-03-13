@@ -1,5 +1,5 @@
-var Xray = require('..')
-var x = Xray()
+const Xray = require('..')
+const x = Xray()
 
 x('http://google.com', {
   main: 'title',

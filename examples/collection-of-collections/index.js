@@ -1,8 +1,8 @@
-var path = require('path')
-var read = require('fs').readFileSync
-var html = read(path.resolve(__dirname, 'index.html'))
-var Xray = require('../..')
-var x = Xray()
+const path = require('path')
+const read = require('fs').readFileSync
+const html = read(path.resolve(__dirname, 'index.html'))
+const Xray = require('../..')
+const x = Xray()
 
 x(html, '.item', [{
   title: 'h2',

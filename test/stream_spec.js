@@ -4,12 +4,12 @@
  * Module Dependencies
  */
 
-var assert = require('assert')
-var EventEmitter = require('events')
-var streamHelper = require('../lib/stream')
+const assert = require('assert')
+const EventEmitter = require('events')
+const streamHelper = require('../lib/stream')
 
 function createStream () {
-  var instance = new EventEmitter()
+  const instance = new EventEmitter()
   instance._data = ''
   instance._open = true
   instance.on('write', function (chunk) { instance._data += chunk })
@@ -27,9 +27,9 @@ function createStream () {
 }
 
 function getSessionResult () {
-  var events = Array.prototype.slice.call(arguments)
-  var stream = createStream()
-  var helper = streamHelper.array(stream)
+  const events = Array.prototype.slice.call(arguments)
+  const stream = createStream()
+  const helper = streamHelper.array(stream)
   events.forEach(function (data, index) { helper(data, index === events.length - 1) })
   while (stream._open) { /* wait for stream to close */ }
   return JSON.stringify(JSON.parse(stream._data))
@@ -41,43 +41,43 @@ function getSessionResult () {
 
 describe('stream.array helper', function () {
   it('accepts non-empty arrays', function () {
-    var result = getSessionResult([1, 2], [3])
+    const result = getSessionResult([1, 2], [3])
     assert.equal(result, '[1,2,3]')
   })
   it('accepts one non-empty array', function () {
-    var result = getSessionResult([1])
+    const result = getSessionResult([1])
     assert.equal(result, '[1]')
   })
   it('accepts one empty array', function () {
-    var result = getSessionResult([])
+    const result = getSessionResult([])
     assert.equal(result, '[]')
   })
   it('accepts one single value', function () {
-    var result = getSessionResult(1)
+    const result = getSessionResult(1)
     assert.equal(result, '[1]')
   })
   it('accepts multiple values', function () {
-    var result = getSessionResult(1, 2, 3)
+    const result = getSessionResult(1, 2, 3)
     assert.equal(result, '[1,2,3]')
   })
   it('accepts one empty array at the end', function () {
-    var result = getSessionResult([1, 2], [3], [])
+    const result = getSessionResult([1, 2], [3], [])
     assert.equal(result, '[1,2,3]')
   })
   it('accepts multiple empty arrays', function () {
-    var result = getSessionResult([], [], [], [])
+    const result = getSessionResult([], [], [], [])
     assert.equal(result, '[]')
   })
   it('accepts arrays', function () {
-    var result = getSessionResult([1], [], [], [2], [])
+    const result = getSessionResult([1], [], [], [2], [])
     assert.equal(result, '[1,2]')
   })
   it('accepts all weird things', function () {
-    var result = getSessionResult([], [1], [2], [], [], 3, 4, [])
-    var result2 = getSessionResult([], [1], [2], [], [], 3, 4, [], [])
-    var result3 = getSessionResult([], [], [1], [2], [], [], 3, 4, [], [])
-    var result4 = getSessionResult([1], [2], [], [], 3, 4, [], [])
-    var result5 = getSessionResult([1, 2, 3, 4])
+    const result = getSessionResult([], [1], [2], [], [], 3, 4, [])
+    const result2 = getSessionResult([], [1], [2], [], [], 3, 4, [], [])
+    const result3 = getSessionResult([], [], [1], [2], [], [], 3, 4, [], [])
+    const result4 = getSessionResult([1], [2], [], [], 3, 4, [], [])
+    const result5 = getSessionResult([1, 2, 3, 4])
     assert.equal(result, '[1,2,3,4]')
     assert.equal(result2, '[1,2,3,4]')
     assert.equal(result3, '[1,2,3,4]')
